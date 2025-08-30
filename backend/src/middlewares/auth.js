@@ -1,23 +1,85 @@
-import jwt from "jsonwebtoken"
-import { env } from "../config/env.js"
+import jwt from 'jsonwebtoken';
+import { config } from '../config/env.js';
+import userRepository from '../repositories/userRepository.js';
 
-export function requireAuth(req, res, next) {
-  const auth = req.headers.authorization || ""
-  const token = auth.startsWith("Bearer ") ? auth.slice(7) : null
-  if (!token) return res.status(401).json({ error: "Unauthorized" })
+export const authenticate = async (req, res, next) => {
   try {
-    req.user = jwt.verify(token, env.JWT_ACCESS_SECRET)
-    next()
-  } catch {
-    res.status(401).json({ error: "Unauthorized" })
-  }
-}
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({
+        success: false,
+        message: 'Access token required'
+      });
+    }
 
-export function requireRole(...roles) {
-  return (req, res, next) => {
-    if (!req.user) return res.status(401).json({ error: "Unauthorized" })
-    const ok = (req.user.roles || []).some((r) => roles.includes(r))
-    if (!ok) return res.status(403).json({ error: "Forbidden" })
-    next()
+    const decoded = jwt.verify(token, config.JWT_SECRET);
+    const user = await userRepository.findById(decoded.id);
+    
+    if (!user || !user.isActive) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid or expired token'
+      });
+    }
+
+    req.user = {
+      id: user._id.toString(),
+      email: user.email,
+      roles: user.roles
+    };
+    
+    next();
+  } catch (error) {
+    res.status(401).json({
+      success: false,
+      message: 'Invalid or expired token'
+    });
   }
-}
+};
+
+export const authorize = (...roles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Authentication required'
+      });
+    }
+
+    const hasRole = roles.some(role => req.user.roles.includes(role));
+    
+    if (!hasRole) {
+      return res.status(403).json({
+        success: false,
+        message: 'Insufficient permissions'
+      });
+    }
+
+    next();
+  };
+};
+
+export const optionalAuth = async (req, res, next) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (token) {
+      const decoded = jwt.verify(token, config.JWT_SECRET);
+      const user = await userRepository.findById(decoded.id);
+      
+      if (user && user.isActive) {
+        req.user = {
+          id: user._id.toString(),
+          email: user.email,
+          roles: user.roles
+        };
+      }
+    }
+    
+    next();
+  } catch (error) {
+    // Continue without authentication
+    next();
+  }
+};

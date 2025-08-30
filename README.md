@@ -1,124 +1,273 @@
 # Team Number : 24
 
-# EventHive — MERN (JS only)
+# EventHive - Complete Event Management Platform
 
-Production-ready event management and ticketing platform.
-- Frontend: React + Vite + Bootstrap (mobile-first)
-- Backend: Node.js + Express (MVC with services/repositories), MongoDB + Mongoose
-- Auth: JWT (access + refresh), RBAC (Admin, EventManager, Volunteer, Attendee)
-- Payments: Razorpay (primary), Stripe-ready toggle stub
-- Tickets: PDF + QR, Email, WhatsApp links
-- Notifications: Reminders T-24h and T-1h (cron)
-- Check-in: QR scanner + anti-duplicate
-- Analytics & Exports: organizer KPIs, CSV/XLSX
+A comprehensive MERN stack event management platform with advanced booking, payment processing, and real-time analytics.
 
-## Prerequisites
-- Node 18+
-- MongoDB (local or cloud)
-- Razorpay test keys
-- SMTP credentials (dev can use Mailtrap/ethereal)
-- (Optional) WhatsApp Cloud API token and phone ID
+## 🚀 Features
 
-## Structure
+### Core Features
+- **Event Management**: Complete CRUD with draft/publish workflows
+- **Multi-Ticket Booking**: Support for General, VIP, Student, and Early Bird tickets
+- **Payment Integration**: Razorpay (primary) with Stripe fallback
+- **Ticket Generation**: PDF tickets with secure QR codes
+- **Notifications**: Email & WhatsApp with automated reminders
+- **Check-In System**: Real-time QR scanner with duplicate prevention
+- **Analytics**: Comprehensive reporting with data export
+- **Role-Based Access**: Admin, EventManager, Volunteer, Attendee roles
+
+### Technical Features
+- **Frontend**: React + Vite + Tailwind CSS 3.4.17
+- **Backend**: Node.js + Express + MongoDB
+- **Authentication**: JWT with refresh tokens
+- **Security**: Rate limiting, input sanitization, CORS
+- **File Upload**: Multer for event cover images
+- **Cron Jobs**: Automated reminders and trending calculations
+
+## 📋 Prerequisites
+
+- Node.js 18+ and npm
+- MongoDB 6+ (local or Atlas)
+- Razorpay account (for payments)
+- Gmail account (for email notifications)
+- WhatsApp Cloud API access (optional)
+
+## 🛠️ Installation & Setup
+
+### 1. Clone and Install Dependencies
+
+```bash
+# Install root dependencies
+npm install
+
+# Install backend dependencies
+cd backend && npm install
+
+# Install frontend dependencies
+cd ../frontend && npm install
+```
+
+### 2. Environment Configuration
+
+Copy the example environment file and configure:
+
+```bash
+cd backend
+cp .env.example .env
+```
+
+Update the `.env` file with your configuration:
+
+```env
+# Database
+MONGODB_URI=mongodb://localhost:27017/eventhive
+
+# JWT Secrets (generate strong secrets for production)
+JWT_SECRET=your-super-secret-jwt-key-here
+JWT_REFRESH_SECRET=your-super-secret-refresh-key-here
+
+# Payment Gateway
+PAYMENT_GATEWAY=razorpay
+RAZORPAY_KEY_ID=your-razorpay-key-id
+RAZORPAY_KEY_SECRET=your-razorpay-key-secret
+
+# Email Configuration
+EMAIL_USER=your-gmail@gmail.com
+EMAIL_PASS=your-gmail-app-password
+
+# WhatsApp (optional)
+WHATSAPP_ACCESS_TOKEN=your-whatsapp-token
+WHATSAPP_PHONE_NUMBER_ID=your-phone-number-id
+```
+
+### 3. Database Setup
+
+Start MongoDB and seed sample data:
+
+```bash
+# Seed the database with sample data
+npm run seed
+```
+
+### 4. Start Development Servers
+
+```bash
+# Start both frontend and backend
+npm run dev
+
+# Or start individually:
+# Backend: cd backend && npm run dev
+# Frontend: cd frontend && npm run dev
+```
+
+The application will be available at:
+- Frontend: http://localhost:5173
+- Backend API: http://localhost:5000
+
+## 🎯 Default User Accounts
+
+After seeding, you can login with these accounts:
+
+- **Admin**: admin@eventhive.com / password123
+- **Event Manager**: manager@eventhive.com / password123  
+- **Volunteer**: volunteer@eventhive.com / password123
+- **Attendee**: attendee@eventhive.com / password123
+
+## 🔧 Configuration
+
+### Payment Gateway Setup
+
+1. **Razorpay** (Primary):
+   - Create account at https://razorpay.com
+   - Get API keys from Dashboard > Settings > API Keys
+   - Add to .env file
+
+2. **Stripe** (Fallback):
+   - Create account at https://stripe.com
+   - Get secret key from Dashboard
+   - Set PAYMENT_GATEWAY=stripe in .env
+
+### Email Configuration
+
+1. Enable 2-factor authentication on Gmail
+2. Generate app password: Account > Security > App passwords
+3. Use app password in EMAIL_PASS
+
+### WhatsApp Integration
+
+1. Setup WhatsApp Cloud API via Meta Developer Console
+2. Get access token and phone number ID
+3. Add to .env file
+
+## 📁 Project Structure
+
+```
 eventhive/
-├── backend/                 # Express API (MVC + service/repo)
-│   └── src/
-│       ├── config/          # db, env, logger, payment, mail, whatsapp
-│       ├── models/
-│       ├── repositories/
-│       ├── services/
-│       ├── controllers/
-│       ├── routes/
-│       ├── middlewares/
-│       ├── utils/           # qr, pdf, csv, excel, dates, promo
-│       ├── jobs/            # cron tasks
-│       ├── webhooks/
-│       ├── app.js
-│       └── server.js
-│   ├── package.json
-│   └── .env.example
-├── frontend/                # React + Vite + Bootstrap
+├── backend/
 │   ├── src/
-│   │   ├── api/             # axios client, query hooks
-│   │   ├── components/
-│   │   ├── pages/
-│   │   ├── context/         # or store/
-│   │   ├── hooks/
-│   │   ├── routes/
-│   │   ├── styles/          # bootstrap overrides + plain CSS
-│   │   ├── utils/
-│   │   ├── main.jsx
-│   │   └── App.jsx
-│   ├── index.html
+│   │   ├── config/         # Database, payment, email configs
+│   │   ├── controllers/    # Request handlers
+│   │   ├── models/         # Mongoose schemas
+│   │   ├── routes/         # Express routes
+│   │   ├── services/       # Business logic
+│   │   ├── repositories/   # Data access layer
+│   │   ├── middlewares/    # Auth, validation, error handling
+│   │   ├── utils/          # Helpers, QR, PDF generation
+│   │   ├── jobs/           # Cron jobs
+│   │   └── server.js       # Express app entry
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/     # Reusable UI components
+│   │   ├── pages/          # Route components
+│   │   ├── context/        # Auth and cart context
+│   │   ├── hooks/          # Custom React hooks
+│   │   ├── api/            # API client and React Query
+│   │   ├── utils/          # Helper functions
+│   │   └── App.jsx         # Main app component
 │   └── package.json
 └── README.md
+```
 
-## Environment
-- Copy backend/.env.example to backend/.env and set:
-  - PORT, MONGO_URI, JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, FRONTEND_URL, BASE_URL
-- Copy frontend/.env.example to frontend/.env and set:
-  - VITE_API_BASE_URL (default http://localhost:4000)
+## 🚀 Production Deployment
 
-## Install & Run (VS Code, two commands per app after npm install)
-- Backend:
-  - cd backend && npm install
-  - npm run dev
-- Frontend:
-  - cd frontend && npm install
-  - npm run dev
+### Backend Deployment
 
-## Scripts
-- Backend
-  - npm run dev — nodemon + ts-node not used (JS only); starts Express on PORT
-  - npm run seed — seeds users, events, ticket types, coupons
-  - npm test — runs unit/integration tests (Jest)
-- Frontend
-  - npm run dev — Vite dev server
-  - npm run build — Vite build
-  - npm run preview — Vite preview
+```bash
+cd backend
+npm run build
+npm start
+```
 
-## .env.example
-See backend/.env.example (copy to backend/.env). Frontend uses VITE_API_BASE_URL set in frontend/.env (optional).
+### Frontend Deployment
 
-## Seeding
-- Creates admin, organizer, volunteer, attendee users
-- 6 example events + ticket types
-- Coupons: early bird, percent, fixed, group/BOGO
+```bash
+cd frontend
+npm run build
+# Deploy dist/ folder to your hosting provider
+```
 
-Run:
-  cd backend && npm run seed
+## 🧪 Testing
 
-## Postman
-Import backend/postman/eventhive.postman_collection.json
+Run the test suite:
 
-## Tests
-- Unit: pricing (coupons), inventory, refunds
-- Integration: auth and basic flow
+```bash
+# Backend tests
+cd backend && npm test
 
-Run:
-  cd backend && npm test
+# Frontend tests  
+cd frontend && npm test
+```
 
-## Production
-- Backend: npm run start (PORT, MONGO_URI, JWT_*, RAZORPAY_*, SMTP_* must be set)
-- Frontend: npm run build → serve behind CDN/proxy; set CORS on backend to allow FRONTEND_URL
+## 📊 API Documentation
 
-## Acceptance Criteria Mapping
-- Responsive UI: Bootstrap grid in all pages
-- Create/publish events, ticket windows & inventory: Organizer dashboard + APIs
-- Search/filters/pagination + sort: Home page + /api/events
-- Razorpay test payment: end-to-end flow with order create + signature verify + booking store
-- Ticket PDF + QR: auto-generated and emailed + WhatsApp link; re-download in My Tickets
-- Reminders: node-cron, logs in dev
-- Check-in: QR scanner (webcam) + duplicate prevention + live stats
-- Coupons: percent, fixed, early bird, group/BOGO in pricing engine
-- Organizer analytics: revenue/tickets/check-in, CSV/XLSX exports
-- Refund policy: thresholds + Razorpay refunds + stock rollback
-- RBAC: enforced via middleware + UI
-- Clean modular code: MVC + services/repos, Joi/Yup validation, helmet/cors/rate limit/sanitization
+Key API endpoints:
 
-## Accessibility & Performance
-- Keyboard navigation, ARIA labels on forms/controls, focus states
-- Image optimization via sizes, lazy loading; pagination on heavy lists
-- Lighthouse tips: preconnect API, minify build, cache static assets
+- `GET /api/events` - Browse events with filters
+- `POST /api/checkout/create-order` - Create payment order
+- `POST /api/checkin/scan` - QR code check-in
+- `GET /api/reports/sales` - Sales analytics
 
-If you get stuck or want changes to stack/providers, tell me and I’ll adjust quickly.
+## 🔒 Security Features
+
+- JWT authentication with refresh tokens
+- Rate limiting (100 requests per 15 minutes)
+- Input sanitization and validation
+- CORS configuration
+- Secure password hashing
+- QR code tamper protection
+
+## 🎫 Ticket Features
+
+- PDF generation with event details and QR codes
+- Email delivery with HTML receipts
+- WhatsApp notifications
+- Secure QR codes with HMAC verification
+- Anti-duplicate check-in system
+
+## 💳 Payment Features
+
+- Razorpay integration (UPI, cards, net banking, wallets)
+- Stripe fallback support
+- Webhook verification for security
+- Refund processing with inventory rollback
+- Coupon and discount system
+
+## 📱 Mobile Features
+
+- Responsive design for all screen sizes
+- Touch-optimized interfaces
+- Mobile QR scanner for check-ins
+- Progressive Web App capabilities
+
+## 🎯 Business Logic
+
+- **Inventory Management**: Atomic ticket quantity updates
+- **Refund Policy**: Time-based refund percentages
+- **Loyalty System**: Points for bookings and referrals
+- **Trending Algorithm**: Weighted scoring based on user actions
+- **Discount Engine**: Multiple coupon types with validation
+
+## 📈 Analytics & Reports
+
+- Real-time sales dashboard
+- Revenue and attendance tracking
+- Export to CSV/Excel formats
+- Check-in statistics
+- User demographics
+
+## 🛡️ Error Handling
+
+- Comprehensive error middleware
+- Request ID tracking
+- Centralized logging
+- Graceful failure handling
+- User-friendly error messages
+
+## 📞 Support
+
+For issues and questions, please create an issue in the repository or contact the development team.
+
+## 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.

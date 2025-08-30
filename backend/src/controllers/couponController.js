@@ -1,29 +1,95 @@
-import Joi from "joi"
-import Coupon from "../models/Coupon.js"
+import couponService from '../services/couponService.js';
+import { validationResult } from 'express-validator';
 
-export async function validateCoupon(req, res) {
-  const schema = Joi.object({
-    code: Joi.string().required(),
-    eventId: Joi.string().required(),
-    amount: Joi.number().required(),
-  })
-  const { error, value } = schema.validate(req.body)
-  if (error) return res.status(400).json({ error: error.message })
+export const createCoupon = async (req, res, next) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation errors',
+        errors: errors.array()
+      });
+    }
 
-  const now = new Date()
-  const coupon = await Coupon.findOne({ code: value.code, active: true }).lean()
-  if (!coupon) return res.status(404).json({ error: "Invalid coupon" })
-  if (coupon.validFrom && now < new Date(coupon.validFrom)) return res.status(400).json({ error: "Coupon not started" })
-  if (coupon.validTo && now > new Date(coupon.validTo)) return res.status(400).json({ error: "Coupon expired" })
-  if (coupon.applicableEventIds?.length && !coupon.applicableEventIds.some((id) => id.toString() === value.eventId)) {
-    return res.status(400).json({ error: "Coupon not applicable" })
+    const couponData = { ...req.body, createdBy: req.user.id };
+    const coupon = await couponService.createCoupon(couponData);
+
+    res.status(201).json({
+      success: true,
+      message: 'Coupon created successfully',
+      data: coupon
+    });
+  } catch (error) {
+    next(error);
   }
-  if (coupon.minAmount && value.amount < coupon.minAmount) return res.status(400).json({ error: "Amount too low" })
+};
 
-  let discount = 0
-  if (coupon.type === "PERCENT")
-    discount = Math.min(value.amount * (coupon.value / 100), coupon.maxDiscount || Number.POSITIVE_INFINITY)
-  if (coupon.type === "FIXED") discount = Math.min(coupon.value, value.amount)
+export const validateCoupon = async (req, res, next) => {
+  try {
+    const { code } = req.params;
+    const { eventId, subtotal, userId } = req.body;
+    
+    const validation = await couponService.validateCoupon(code, {
+      eventId,
+      subtotal,
+      userId: userId || req.user.id
+    });
 
-  res.json({ valid: true, discount, coupon })
-}
+    res.json({
+      success: true,
+      data: validation
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getCoupons = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, active, eventId } = req.query;
+    
+    const result = await couponService.getCoupons(req.user.id, {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      active: active === 'true',
+      eventId
+    });
+
+    res.json({
+      success: true,
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCoupon = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const coupon = await couponService.updateCoupon(id, req.body, req.user.id);
+
+    res.json({
+      success: true,
+      message: 'Coupon updated successfully',
+      data: coupon
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteCoupon = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    await couponService.deleteCoupon(id, req.user.id);
+
+    res.json({
+      success: true,
+      message: 'Coupon deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};

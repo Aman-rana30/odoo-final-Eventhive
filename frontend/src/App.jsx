@@ -1,33 +1,147 @@
-import { Routes, Route, Navigate } from "react-router-dom"
-import Home from "./pages/Home.jsx"
-import Login from "./pages/Login.jsx"
-import Register from "./pages/Register.jsx"
-import ProtectedRoute from "./routes/ProtectedRoute.jsx"
-import Navbar from "./components/Navbar.jsx"
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
 
-export default function App() {
+// Layout
+import Navbar from './components/layout/Navbar';
+import Footer from './components/layout/Footer';
+
+// Public pages
+import Home from './pages/Home';
+import Events from './pages/Events';
+import EventDetails from './pages/EventDetails';
+import Login from './pages/auth/Login';
+import Register from './pages/auth/Register';
+
+// Protected pages
+import Dashboard from './pages/Dashboard';
+import MyBookings from './pages/MyBookings';
+import BookingDetails from './pages/BookingDetails';
+import Checkout from './pages/Checkout';
+import CheckoutSuccess from './pages/CheckoutSuccess';
+
+// Organizer pages
+import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
+import CreateEvent from './pages/organizer/CreateEvent';
+import EditEvent from './pages/organizer/EditEvent';
+import EventAnalytics from './pages/organizer/EventAnalytics';
+import ManageTickets from './pages/organizer/ManageTickets';
+import EventBookings from './pages/organizer/EventBookings';
+
+// Volunteer pages
+import CheckinScanner from './pages/volunteer/CheckinScanner';
+
+// Admin pages
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+
+// Components
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import LoadingSpinner from './components/ui/LoadingSpinner';
+
+function App() {
+  const { isLoading } = useAuth();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
+
   return (
-    <div className="container py-3">
-      {/* // replace inline nav with Navbar that is auth-aware */}
+    <div className="min-h-screen bg-gray-50 flex flex-col">
       <Navbar />
-      <Routes>
-        {/* public auth pages */}
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+      
+      <main className="flex-1">
+        <Routes>
+          {/* Public routes */}
+          <Route path="/" element={<Home />} />
+          <Route path="/events" element={<Events />} />
+          <Route path="/events/:slug" element={<EventDetails />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
-        {/* protected routes - require auth first */}
-        <Route
-          path="/"
-          element={
+          {/* Protected routes */}
+          <Route path="/dashboard" element={
             <ProtectedRoute>
-              <Home />
+              <Dashboard />
             </ProtectedRoute>
-          }
-        />
+          } />
+          <Route path="/my-bookings" element={
+            <ProtectedRoute>
+              <MyBookings />
+            </ProtectedRoute>
+          } />
+          <Route path="/bookings/:id" element={
+            <ProtectedRoute>
+              <BookingDetails />
+            </ProtectedRoute>
+          } />
+          <Route path="/checkout/:eventId" element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          } />
+          <Route path="/checkout/success/:bookingId" element={
+            <ProtectedRoute>
+              <CheckoutSuccess />
+            </ProtectedRoute>
+          } />
 
-        {/* catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Organizer routes */}
+          <Route path="/organizer" element={
+            <ProtectedRoute roles={['EventManager', 'Admin']}>
+              <OrganizerDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/organizer/events/create" element={
+            <ProtectedRoute roles={['EventManager', 'Admin']}>
+              <CreateEvent />
+            </ProtectedRoute>
+          } />
+          <Route path="/organizer/events/:id/edit" element={
+            <ProtectedRoute roles={['EventManager', 'Admin']}>
+              <EditEvent />
+            </ProtectedRoute>
+          } />
+          <Route path="/organizer/events/:id/analytics" element={
+            <ProtectedRoute roles={['EventManager', 'Admin']}>
+              <EventAnalytics />
+            </ProtectedRoute>
+          } />
+          <Route path="/organizer/events/:id/tickets" element={
+            <ProtectedRoute roles={['EventManager', 'Admin']}>
+              <ManageTickets />
+            </ProtectedRoute>
+          } />
+          <Route path="/organizer/events/:id/bookings" element={
+            <ProtectedRoute roles={['EventManager', 'Admin']}>
+              <EventBookings />
+            </ProtectedRoute>
+          } />
+
+          {/* Volunteer routes */}
+          <Route path="/checkin/:eventId" element={
+            <ProtectedRoute roles={['Volunteer', 'EventManager', 'Admin']}>
+              <CheckinScanner />
+            </ProtectedRoute>
+          } />
+
+          {/* Admin routes */}
+          <Route path="/admin" element={
+            <ProtectedRoute roles={['Admin']}>
+              <AdminDashboard />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/users" element={
+            <ProtectedRoute roles={['Admin']}>
+              <UserManagement />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </main>
+
+      <Footer />
     </div>
-  )
+  );
 }
+
+export default App;

@@ -1,40 +1,129 @@
-import mongoose from "mongoose"
+import mongoose from 'mongoose';
 
-const itemSchema = new mongoose.Schema({
-  ticketTypeId: { type: mongoose.Schema.Types.ObjectId, ref: "TicketType", required: true },
-  name: String,
-  qty: Number,
-  priceAtPurchase: Number,
-})
-
-const bookingSchema = new mongoose.Schema(
-  {
-    bookingId: { type: String, required: true, unique: true, index: true },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
-    eventId: { type: mongoose.Schema.Types.ObjectId, ref: "Event", required: true, index: true },
-    items: [itemSchema],
-    subtotal: Number,
-    discount: Number,
-    total: Number,
-    payment: {
-      gateway: { type: String, default: "razorpay" },
-      orderId: String,
-      paymentId: String,
-      status: { type: String, enum: ["Pending", "Paid", "Failed"], default: "Pending" },
-    },
-    status: { type: String, enum: ["Pending", "Paid", "Cancelled", "Refunded"], default: "Pending" },
-    qrCodeUrl: String,
-    pdfUrl: String,
-    delivery: {
-      emailed: { type: Boolean, default: false },
-      whatsapped: { type: Boolean, default: false },
-    },
-    reminders: {
-      t24hSent: { type: Boolean, default: false },
-      t1hSent: { type: Boolean, default: false },
-    },
+const bookingSchema = new mongoose.Schema({
+  bookingId: {
+    type: String,
+    required: true,
+    unique: true
   },
-  { timestamps: true },
-)
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
+  eventId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Event',
+    required: true
+  },
+  items: [{
+    ticketTypeId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'TicketType',
+      required: true
+    },
+    quantity: {
+      type: Number,
+      required: true,
+      min: 1
+    },
+    priceAtPurchase: {
+      type: Number,
+      required: true,
+      min: 0
+    }
+  }],
+  attendeeInfo: {
+    name: {
+      type: String,
+      required: true,
+      trim: true
+    },
+    email: {
+      type: String,
+      required: true,
+      lowercase: true
+    },
+    phone: {
+      type: String,
+      required: true
+    }
+  },
+  subtotal: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  discount: {
+    type: Number,
+    default: 0,
+    min: 0
+  },
+  total: {
+    type: Number,
+    required: true,
+    min: 0
+  },
+  couponCode: String,
+  payment: {
+    gateway: {
+      type: String,
+      enum: ['razorpay', 'stripe'],
+      required: true
+    },
+    orderId: String,
+    paymentId: String,
+    signature: String,
+    status: {
+      type: String,
+      enum: ['pending', 'completed', 'failed', 'refunded'],
+      default: 'pending'
+    }
+  },
+  status: {
+    type: String,
+    enum: ['Pending', 'Paid', 'Cancelled', 'Refunded'],
+    default: 'Pending'
+  },
+  qrCodeUrl: String,
+  pdfUrl: String,
+  delivery: {
+    emailed: {
+      type: Boolean,
+      default: false
+    },
+    whatsapped: {
+      type: Boolean,
+      default: false
+    },
+    emailedAt: Date,
+    whatsappedAt: Date
+  },
+  refund: {
+    amount: Number,
+    reason: String,
+    refundedAt: Date,
+    gatewayRefundId: String
+  },
+  checkedIn: {
+    type: Boolean,
+    default: false
+  },
+  checkedInAt: Date,
+  checkedInBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User'
+  }
+}, {
+  timestamps: true
+});
 
-export default mongoose.model("Booking", bookingSchema)
+// Indexes
+bookingSchema.index({ bookingId: 1 });
+bookingSchema.index({ userId: 1 });
+bookingSchema.index({ eventId: 1 });
+bookingSchema.index({ status: 1 });
+bookingSchema.index({ 'payment.status': 1 });
+
+export default mongoose.model('Booking', bookingSchema);
+```
