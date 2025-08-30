@@ -65,4 +65,3 @@ Your ticket PDF has been emailed to you. Please show it at the event entrance.
 
 Thank you for choosing EventHive! 🎉`;
 };
-```

@@ -27,9 +27,7 @@ const reviewSchema = new mongoose.Schema({
 });
 
 // Indexes
-reviewSchema.index({ eventId: 1 });
 reviewSchema.index({ userId: 1 });
 reviewSchema.index({ eventId: 1, userId: 1 }, { unique: true });
 
 export default mongoose.model('Review', reviewSchema);
-```

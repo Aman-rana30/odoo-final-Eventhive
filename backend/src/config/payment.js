@@ -41,4 +41,3 @@ export const createPaymentOrder = async (amount, currency = 'INR', notes = {}) =
   
   throw new Error('Payment gateway not configured');
 };
-```

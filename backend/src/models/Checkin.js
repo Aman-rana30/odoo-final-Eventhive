@@ -28,9 +28,7 @@ const checkinSchema = new mongoose.Schema({
 });
 
 // Indexes
-checkinSchema.index({ bookingId: 1 });
 checkinSchema.index({ eventId: 1 });
 checkinSchema.index({ scannedBy: 1 });
 
 export default mongoose.model('Checkin', checkinSchema);
-```

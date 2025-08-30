@@ -7,14 +7,14 @@ import Navbar from './components/layout/Navbar';
 import Footer from './components/layout/Footer';
 
 // Public pages
-import Home from './pages/Home';
-import Events from './pages/Events';
-import EventDetails from './pages/EventDetails';
-import Login from './pages/auth/Login';
-import Register from './pages/auth/Register';
+import Home from './pages/Home.jsx';
+import Events from './pages/Events.jsx';
+import EventDetails from './pages/EventDetails.jsx';
+import Login from './pages/auth/Login.jsx';
+import Register from './pages/auth/Register.jsx';
 
 // Protected pages
-import Dashboard from './pages/Dashboard';
+import Dashboard from './pages/Dashboard.jsx';
 import MyBookings from './pages/MyBookings';
 import BookingDetails from './pages/BookingDetails';
 import Checkout from './pages/Checkout';
@@ -134,6 +134,22 @@ function App() {
           <Route path="/admin/users" element={
             <ProtectedRoute roles={['Admin']}>
               <UserManagement />
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/analytics" element={
+            <ProtectedRoute roles={['Admin']}>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 className="text-3xl font-bold text-gray-900">Admin Analytics</h1>
+                <p className="mt-2 text-gray-600">Platform analytics and insights (Coming Soon)</p>
+              </div>
+            </ProtectedRoute>
+          } />
+          <Route path="/admin/settings" element={
+            <ProtectedRoute roles={['Admin']}>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
+                <p className="mt-2 text-gray-600">Configure system settings (Coming Soon)</p>
+              </div>
             </ProtectedRoute>
           } />
         </Routes>

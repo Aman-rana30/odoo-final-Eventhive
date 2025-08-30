@@ -75,4 +75,3 @@ export const generateTicketPDF = async (booking, event) => {
     throw new Error(`PDF generation failed: ${error.message}`);
   }
 };
-```

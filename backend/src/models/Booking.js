@@ -119,11 +119,9 @@ const bookingSchema = new mongoose.Schema({
 });
 
 // Indexes
-bookingSchema.index({ bookingId: 1 });
 bookingSchema.index({ userId: 1 });
 bookingSchema.index({ eventId: 1 });
 bookingSchema.index({ status: 1 });
 bookingSchema.index({ 'payment.status': 1 });
 
 export default mongoose.model('Booking', bookingSchema);
-```

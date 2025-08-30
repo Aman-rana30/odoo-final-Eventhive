@@ -62,4 +62,3 @@ export const verifyQRPayload = (payload) => {
     return { valid: false, error: 'Invalid QR code format' };
   }
 };
-```

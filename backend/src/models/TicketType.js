@@ -52,7 +52,6 @@ const ticketTypeSchema = new mongoose.Schema({
 });
 
 // Indexes
-ticketTypeSchema.index({ eventId: 1 });
 ticketTypeSchema.index({ saleStartAt: 1, saleEndAt: 1 });
 
 // Set remaining quantity to max quantity initially

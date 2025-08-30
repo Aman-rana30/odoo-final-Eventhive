@@ -114,7 +114,6 @@ const eventSchema = new mongoose.Schema({
 });
 
 // Indexes
-eventSchema.index({ slug: 1 });
 eventSchema.index({ category: 1 });
 eventSchema.index({ startAt: 1 });
 eventSchema.index({ status: 1 });

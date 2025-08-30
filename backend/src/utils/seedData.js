@@ -18,14 +18,12 @@ const seedData = async () => {
     await Coupon.deleteMany({});
 
     // Create users
-    const hashedPassword = await bcrypt.hash('password123', 12);
-    
     const users = await User.create([
       {
         name: 'Admin User',
         email: 'admin@eventhive.com',
         phone: '9876543210',
-        passwordHash: hashedPassword,
+        passwordHash: 'password123',
         roles: ['Admin'],
         loyaltyPoints: 1000
       },
@@ -33,7 +31,7 @@ const seedData = async () => {
         name: 'Event Manager',
         email: 'manager@eventhive.com',
         phone: '9876543211',
-        passwordHash: hashedPassword,
+        passwordHash: 'password123',
         roles: ['EventManager'],
         loyaltyPoints: 500
       },
@@ -41,7 +39,7 @@ const seedData = async () => {
         name: 'Volunteer User',
         email: 'volunteer@eventhive.com',
         phone: '9876543212',
-        passwordHash: hashedPassword,
+        passwordHash: 'password123',
         roles: ['Volunteer'],
         loyaltyPoints: 200
       },
@@ -49,7 +47,7 @@ const seedData = async () => {
         name: 'Regular Attendee',
         email: 'attendee@eventhive.com',
         phone: '9876543213',
-        passwordHash: hashedPassword,
+        passwordHash: 'password123',
         roles: ['Attendee'],
         loyaltyPoints: 100
       }
@@ -192,6 +190,13 @@ const seedData = async () => {
                        event.category === 'conference' ? 1500 :
                        event.category === 'workshop' ? 800 : 500;
 
+      // Calculate valid saleEndAt for each ticket type
+      const oneHour = 60 * 60 * 1000;
+      const oneDay = 24 * oneHour;
+      const eventStart = event.startAt.getTime();
+      const earlyBirdEnd = Math.max(now.getTime() + oneHour, eventStart - oneDay);
+      const generalEnd = Math.max(now.getTime() + oneHour, eventStart - oneHour);
+
       const eventTickets = [
         {
           eventId: event._id,
@@ -199,8 +204,9 @@ const seedData = async () => {
           description: 'Limited time early bird discount',
           price: Math.round(basePrice * 0.7),
           saleStartAt: now,
-          saleEndAt: new Date(event.startAt.getTime() - 15 * 24 * 60 * 60 * 1000),
+          saleEndAt: new Date(earlyBirdEnd),
           maxQuantity: Math.round(event.capacity * 0.3),
+          remainingQuantity: Math.round(event.capacity * 0.3),
           perUserLimit: 5
         },
         {
@@ -209,8 +215,9 @@ const seedData = async () => {
           description: 'Standard admission ticket',
           price: basePrice,
           saleStartAt: now,
-          saleEndAt: new Date(event.startAt.getTime() - 1 * 60 * 60 * 1000),
+          saleEndAt: new Date(generalEnd),
           maxQuantity: Math.round(event.capacity * 0.5),
+          remainingQuantity: Math.round(event.capacity * 0.5),
           perUserLimit: 10
         },
         {
@@ -219,8 +226,9 @@ const seedData = async () => {
           description: 'Special pricing for students',
           price: Math.round(basePrice * 0.5),
           saleStartAt: now,
-          saleEndAt: new Date(event.startAt.getTime() - 1 * 60 * 60 * 1000),
+          saleEndAt: new Date(generalEnd),
           maxQuantity: Math.round(event.capacity * 0.15),
+          remainingQuantity: Math.round(event.capacity * 0.15),
           perUserLimit: 2
         },
         {
@@ -229,8 +237,9 @@ const seedData = async () => {
           description: 'Premium experience with exclusive benefits',
           price: Math.round(basePrice * 2),
           saleStartAt: now,
-          saleEndAt: new Date(event.startAt.getTime() - 1 * 60 * 60 * 1000),
+          saleEndAt: new Date(generalEnd),
           maxQuantity: Math.round(event.capacity * 0.05),
+          remainingQuantity: Math.round(event.capacity * 0.05),
           perUserLimit: 3
         }
       ];

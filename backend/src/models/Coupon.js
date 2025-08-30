@@ -67,7 +67,6 @@ const couponSchema = new mongoose.Schema({
 });
 
 // Indexes
-couponSchema.index({ code: 1 });
 couponSchema.index({ validFrom: 1, validTo: 1 });
 couponSchema.index({ active: 1 });
 
@@ -80,4 +79,3 @@ couponSchema.pre('save', function(next) {
 });
 
 export default mongoose.model('Coupon', couponSchema);
-```

@@ -1,10 +1,10 @@
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import { config } from './env.js';
 
 let transporter = null;
 
 if (config.EMAIL_USER && config.EMAIL_PASS) {
-  transporter = nodemailer.createTransporter({
+  transporter = nodemailer.createTransport({
     service: config.EMAIL_SERVICE,
     host: config.EMAIL_HOST,
     port: config.EMAIL_PORT,
@@ -82,4 +82,3 @@ export const generateTicketEmailHTML = (booking, event) => {
     </html>
   `;
 };
-```

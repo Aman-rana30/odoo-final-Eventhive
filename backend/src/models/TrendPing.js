@@ -22,8 +22,6 @@ const trendPingSchema = new mongoose.Schema({
 });
 
 // Indexes
-trendPingSchema.index({ eventId: 1, action: 1 });
 trendPingSchema.index({ createdAt: 1 });
 
 export default mongoose.model('TrendPing', trendPingSchema);
-```

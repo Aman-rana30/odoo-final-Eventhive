@@ -58,13 +58,17 @@ const userSchema = new mongoose.Schema({
 });
 
 // Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ referralCode: 1 });
 userSchema.index({ roles: 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
   if (!this.isModified('passwordHash')) return next();
+  
+  // Check if passwordHash is already hashed (bcrypt hashes start with $2a$ or $2b$)
+  if (this.passwordHash.startsWith('$2a$') || this.passwordHash.startsWith('$2b$')) {
+    return next();
+  }
+  
   this.passwordHash = await bcrypt.hash(this.passwordHash, 12);
   next();
 });
