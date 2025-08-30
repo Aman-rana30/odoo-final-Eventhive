@@ -22,14 +22,14 @@ const OrganizerDashboard = () => {
 
   const fetchMyEvents = async () => {
     try {
-      const response = await eventsAPI.getMyEvents();
-      setEvents(response);
+      const eventsList = await eventsAPI.getMyEvents();
+      setEvents(eventsList);
       
       // Calculate stats
-      const totalEvents = response.length;
-      const publishedEvents = response.filter(event => event.status === 'Published').length;
-      const totalBookings = response.reduce((sum, event) => sum + (event.ticketsSold || 0), 0);
-      const totalRevenue = response.reduce((sum, event) => sum + (event.revenue || 0), 0);
+      const totalEvents = eventsList.length;
+      const publishedEvents = eventsList.filter(event => event.status === 'Published').length;
+      const totalBookings = eventsList.reduce((sum, event) => sum + (event.ticketsSold || 0), 0);
+      const totalRevenue = eventsList.reduce((sum, event) => sum + (event.revenue || 0), 0);
       
       setStats({
         totalEvents,
@@ -38,6 +38,7 @@ const OrganizerDashboard = () => {
         totalRevenue
       });
     } catch (error) {
+      console.error('Error fetching events:', error);
       toast.error('Failed to fetch events');
     } finally {
       setIsLoading(false);
@@ -73,7 +74,7 @@ const OrganizerDashboard = () => {
       <div className="mb-8">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Organizer Dashboard</h1>
+      <h1 className="text-3xl font-bold text-gray-900">Organizer Dashboard</h1>
             <p className="mt-2 text-gray-600">
               Welcome back, {user?.name}! Manage your events and track performance.
             </p>

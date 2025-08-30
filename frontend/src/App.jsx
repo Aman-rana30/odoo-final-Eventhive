@@ -34,6 +34,8 @@ import CheckinScanner from './pages/volunteer/CheckinScanner';
 // Admin pages
 import AdminDashboard from './pages/admin/AdminDashboard';
 import UserManagement from './pages/admin/UserManagement';
+import AdminAnalytics from './pages/admin/AdminAnalytics';
+import AdminSettings from './pages/admin/AdminSettings';
 
 // Components
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -119,6 +121,11 @@ function App() {
           } />
 
           {/* Volunteer routes */}
+          <Route path="/checkin" element={
+            <ProtectedRoute roles={['Volunteer', 'EventManager', 'Admin']}>
+              <CheckinScanner />
+            </ProtectedRoute>
+          } />
           <Route path="/checkin/:eventId" element={
             <ProtectedRoute roles={['Volunteer', 'EventManager', 'Admin']}>
               <CheckinScanner />
@@ -138,18 +145,12 @@ function App() {
           } />
           <Route path="/admin/analytics" element={
             <ProtectedRoute roles={['Admin']}>
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <h1 className="text-3xl font-bold text-gray-900">Admin Analytics</h1>
-                <p className="mt-2 text-gray-600">Platform analytics and insights (Coming Soon)</p>
-              </div>
+              <AdminAnalytics />
             </ProtectedRoute>
           } />
           <Route path="/admin/settings" element={
             <ProtectedRoute roles={['Admin']}>
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <h1 className="text-3xl font-bold text-gray-900">System Settings</h1>
-                <p className="mt-2 text-gray-600">Configure system settings (Coming Soon)</p>
-              </div>
+              <AdminSettings />
             </ProtectedRoute>
           } />
         </Routes>

@@ -155,12 +155,19 @@ class EventService {
       filters.status = status;
     }
 
-    return await eventRepository.findWithFilters({
+    const result = await eventRepository.findWithFilters({
       filters,
       page,
       limit,
       sort: { createdAt: -1 }
     });
+
+    return {
+      events: result.events,
+      total: result.total,
+      pages: Math.ceil(result.total / limit),
+      currentPage: page
+    };
   }
 
   parseSortOption(sort) {

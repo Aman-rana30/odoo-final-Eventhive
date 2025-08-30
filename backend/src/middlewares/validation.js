@@ -2,7 +2,72 @@ import Joi from 'joi';
 
 const validate = (schema) => {
   return (req, res, next) => {
-    const { error } = schema.validate(req.body);
+
+    
+    // Handle multipart form data - convert nested fields back to objects
+    let dataToValidate = { ...req.body };
+    
+    // Convert nested venue fields back to object structure
+    if (req.body['venue.address'] || req.body['venue.city'] || req.body['venue.state']) {
+      dataToValidate.venue = {
+        address: req.body['venue.address'],
+        city: req.body['venue.city'],
+        state: req.body['venue.state'],
+        country: req.body['venue.country'] || 'India',
+        type: req.body['venue.type'] || 'indoor'
+      };
+      
+      // Remove the flat venue fields
+      delete dataToValidate['venue.address'];
+      delete dataToValidate['venue.city'];
+      delete dataToValidate['venue.state'];
+      delete dataToValidate['venue.country'];
+      delete dataToValidate['venue.type'];
+    }
+    
+    // Convert date strings to Date objects for validation
+    if (dataToValidate.startAt) {
+      const startDate = new Date(dataToValidate.startAt);
+      if (isNaN(startDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          errors: [{ field: 'startAt', message: 'Invalid start date format' }]
+        });
+      }
+      dataToValidate.startAt = startDate;
+    }
+    if (dataToValidate.endAt) {
+      const endDate = new Date(dataToValidate.endAt);
+      if (isNaN(endDate.getTime())) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          errors: [{ field: 'endAt', message: 'Invalid end date format' }]
+        });
+      }
+      dataToValidate.endAt = endDate;
+    }
+    
+    // Convert capacity to number
+    if (dataToValidate.capacity) {
+      const capacity = parseInt(dataToValidate.capacity);
+      if (isNaN(capacity) || capacity < 1) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          errors: [{ field: 'capacity', message: 'Capacity must be a positive number' }]
+        });
+      }
+      dataToValidate.capacity = capacity;
+    }
+    
+    // Handle tags array
+    if (dataToValidate.tags && typeof dataToValidate.tags === 'string') {
+      dataToValidate.tags = dataToValidate.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    }
+    
+    const { error } = schema.validate(dataToValidate);
     if (error) {
       return res.status(400).json({
         success: false,
@@ -13,6 +78,19 @@ const validate = (schema) => {
         }))
       });
     }
+    
+    // Update req.body with the processed data
+    req.body = dataToValidate;
+    
+    // Custom validation for start date being in the future
+    if (dataToValidate.startAt && dataToValidate.startAt <= new Date()) {
+      return res.status(400).json({
+        success: false,
+        message: 'Validation error',
+        errors: [{ field: 'startAt', message: 'Start date must be in the future' }]
+      });
+    }
+    
     next();
   };
 };
@@ -47,7 +125,7 @@ export const eventSchema = Joi.object({
     lng: Joi.number().optional(),
     type: Joi.string().valid('indoor', 'outdoor').default('indoor')
   }).required(),
-  startAt: Joi.date().greater('now').required(),
+  startAt: Joi.date().required(),
   endAt: Joi.date().greater(Joi.ref('startAt')).required(),
   capacity: Joi.number().integer().min(1).required(),
   tags: Joi.array().items(Joi.string()).optional()

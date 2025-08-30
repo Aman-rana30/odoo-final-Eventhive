@@ -18,7 +18,6 @@ export const eventsAPI = {
 
   createEvent: async (eventData) => {
     const formData = new FormData();
-    
     Object.keys(eventData).forEach(key => {
       if (key === 'venue') {
         Object.keys(eventData.venue).forEach(venueKey => {
@@ -36,7 +35,7 @@ export const eventsAPI = {
         formData.append(key, eventData[key]);
       }
     });
-
+    // Send to backend, which will upload to Cloudinary
     const response = await apiClient.post('/events', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     });
@@ -95,6 +94,6 @@ export const eventsAPI = {
 
   getMyEvents: async (params = {}) => {
     const response = await apiClient.get('/events/my/events', { params });
-    return response.data.data;
+    return response.data.data.events || response.data.data;
   },
 };

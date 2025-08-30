@@ -1,5 +1,7 @@
 import eventService from '../services/eventService.js';
 import { validationResult } from 'express-validator';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
+import fs from 'fs';
 
 export const getEvents = async (req, res, next) => {
   try {
@@ -84,14 +86,22 @@ export const createEvent = async (req, res, next) => {
       });
     }
 
+    let coverImageUrl = '';
+    if (req.file) {
+      // Upload to Cloudinary
+      const result = await uploadToCloudinary(req.file.path, 'events');
+      coverImageUrl = result.secure_url;
+      // Remove local file after upload
+      fs.unlink(req.file.path, () => {});
+    }
+
     const eventData = {
       ...req.body,
       organizer: req.user.id,
-      coverImageUrl: req.file ? `/uploads/events/${req.file.filename}` : ''
+      coverImageUrl
     };
 
     const event = await eventService.createEvent(eventData);
-    
     res.status(201).json({
       success: true,
       message: 'Event created successfully',
@@ -105,13 +115,17 @@ export const createEvent = async (req, res, next) => {
 export const updateEvent = async (req, res, next) => {
   try {
     const { id } = req.params;
+    let coverImageUrl;
+    if (req.file) {
+      const result = await uploadToCloudinary(req.file.path, 'events');
+      coverImageUrl = result.secure_url;
+      fs.unlink(req.file.path, () => {});
+    }
     const updateData = {
       ...req.body,
-      ...(req.file && { coverImageUrl: `/uploads/events/${req.file.filename}` })
+      ...(coverImageUrl && { coverImageUrl })
     };
-
     const event = await eventService.updateEvent(id, updateData, req.user.id);
-    
     res.json({
       success: true,
       message: 'Event updated successfully',
