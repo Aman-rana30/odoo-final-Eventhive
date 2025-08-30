@@ -1,0 +1,57 @@
+{
+  "name": "eventmitra-client",
+  "version": "1.0.0",
+  "description": "EventMitra Frontend React App",
+  "private": true,
+  "dependencies": {
+    "@reduxjs/toolkit": "^1.9.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.15.0",
+    "react-redux": "^8.1.2",
+    "axios": "^1.5.0",
+    "tailwindcss": "^3.3.3",
+    "@tailwindcss/forms": "^0.5.6",
+    "react-query": "^3.39.3",
+    "react-hook-form": "^7.45.4",
+    "react-hot-toast": "^2.4.1",
+    "react-icons": "^4.10.1",
+    "chart.js": "^4.4.0",
+    "react-chartjs-2": "^5.2.0",
+    "@googlemaps/react-wrapper": "^1.1.35",
+    "qrcode.react": "^3.1.0",
+    "html5-qrcode": "^2.3.8",
+    "moment": "^2.29.4",
+    "react-datepicker": "^4.16.0"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "react-scripts": "5.0.1",
+    "autoprefixer": "^10.4.15",
+    "postcss": "^8.4.28"
+  },
+  "proxy": "http://localhost:5000"
+}
