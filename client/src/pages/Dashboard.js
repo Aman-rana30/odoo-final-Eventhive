@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
-import { FiCalendar, FiTicket, FiTrendingUp, FiUser, FiPlus } from 'react-icons/fi';
+import { FiCalendar, FiTag, FiTrendingUp, FiUser, FiPlus } from 'react-icons/fi';
 
 const Dashboard = () => {
   const { user } = useSelector((state) => state.auth);
@@ -17,7 +17,7 @@ const Dashboard = () => {
     {
       title: 'Total Tickets',
       value: '12',
-      icon: FiTicket,
+      icon: FiTag,
       color: 'bg-green-500',
       link: '/tickets',
     },
@@ -100,7 +100,7 @@ const Dashboard = () => {
                 to="/tickets"
                 className="flex items-center p-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
               >
-                <FiTicket className="w-5 h-5 text-green-600 mr-3" />
+                <FiTag className="w-5 h-5 text-green-600 mr-3" />
                 <div>
                   <div className="font-medium text-gray-900">My Tickets</div>
                   <div className="text-sm text-gray-500">View your purchased tickets</div>
