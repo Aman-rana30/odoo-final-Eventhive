@@ -1,3 +1,5 @@
+# Team Number : 24
+
 # EventHive — MERN (JS only)
 
 Production-ready event management and ticketing platform.
