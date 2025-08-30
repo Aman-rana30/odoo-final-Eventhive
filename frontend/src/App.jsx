@@ -77,6 +77,11 @@ function App() {
               <BookingDetails />
             </ProtectedRoute>
           } />
+          <Route path="/checkout" element={
+            <ProtectedRoute>
+              <Checkout />
+            </ProtectedRoute>
+          } />
           <Route path="/checkout/:eventId" element={
             <ProtectedRoute>
               <Checkout />

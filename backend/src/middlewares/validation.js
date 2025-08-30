@@ -2,13 +2,19 @@ import Joi from 'joi';
 
 const validate = (schema) => {
   return (req, res, next) => {
-
+    console.log('🔍 Validation middleware called');
+    console.log('📥 Raw request body:', JSON.stringify(req.body, null, 2));
+    console.log('📁 Files:', req.files);
+    console.log('📄 Single file:', req.file);
     
     // Handle multipart form data - convert nested fields back to objects
     let dataToValidate = { ...req.body };
     
     // Convert nested venue fields back to object structure
+    // Handle both flat format (venue.address) and nested format (venue: {address: ...})
     if (req.body['venue.address'] || req.body['venue.city'] || req.body['venue.state']) {
+      console.log('🏢 Processing flat venue fields');
+      // Flat format from FormData
       dataToValidate.venue = {
         address: req.body['venue.address'],
         city: req.body['venue.city'],
@@ -23,12 +29,26 @@ const validate = (schema) => {
       delete dataToValidate['venue.state'];
       delete dataToValidate['venue.country'];
       delete dataToValidate['venue.type'];
+    } else if (req.body.venue && typeof req.body.venue === 'object') {
+      console.log('🏢 Processing nested venue object');
+      // Already in nested format, ensure all required fields are present
+      dataToValidate.venue = {
+        address: req.body.venue.address,
+        city: req.body.venue.city,
+        state: req.body.venue.state,
+        country: req.body.venue.country || 'India',
+        type: req.body.venue.type || 'indoor'
+      };
+    } else {
+      console.log('⚠️ No venue data found');
     }
     
     // Convert date strings to Date objects for validation
     if (dataToValidate.startAt) {
+      console.log('📅 Processing startAt:', dataToValidate.startAt);
       const startDate = new Date(dataToValidate.startAt);
       if (isNaN(startDate.getTime())) {
+        console.log('❌ Invalid startAt date');
         return res.status(400).json({
           success: false,
           message: 'Validation error',
@@ -38,8 +58,10 @@ const validate = (schema) => {
       dataToValidate.startAt = startDate;
     }
     if (dataToValidate.endAt) {
+      console.log('📅 Processing endAt:', dataToValidate.endAt);
       const endDate = new Date(dataToValidate.endAt);
       if (isNaN(endDate.getTime())) {
+        console.log('❌ Invalid endAt date');
         return res.status(400).json({
           success: false,
           message: 'Validation error',
@@ -51,8 +73,10 @@ const validate = (schema) => {
     
     // Convert capacity to number
     if (dataToValidate.capacity) {
+      console.log('👥 Processing capacity:', dataToValidate.capacity);
       const capacity = parseInt(dataToValidate.capacity);
       if (isNaN(capacity) || capacity < 1) {
+        console.log('❌ Invalid capacity');
         return res.status(400).json({
           success: false,
           message: 'Validation error',
@@ -62,13 +86,22 @@ const validate = (schema) => {
       dataToValidate.capacity = capacity;
     }
     
-    // Handle tags array
-    if (dataToValidate.tags && typeof dataToValidate.tags === 'string') {
-      dataToValidate.tags = dataToValidate.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+    // Handle tags array - could be string or array
+    if (dataToValidate.tags) {
+      console.log('🏷️ Processing tags:', dataToValidate.tags);
+      if (typeof dataToValidate.tags === 'string') {
+        dataToValidate.tags = dataToValidate.tags.split(',').map(tag => tag.trim()).filter(tag => tag);
+      } else if (Array.isArray(dataToValidate.tags)) {
+        dataToValidate.tags = dataToValidate.tags.filter(tag => tag && tag.trim());
+      }
     }
+    
+    // Debug logging
+    console.log('🔧 Data to validate:', JSON.stringify(dataToValidate, null, 2));
     
     const { error } = schema.validate(dataToValidate);
     if (error) {
+      console.log('❌ Validation error:', error.details);
       return res.status(400).json({
         success: false,
         message: 'Validation error',
@@ -79,11 +112,14 @@ const validate = (schema) => {
       });
     }
     
+    console.log('✅ Validation passed');
+    
     // Update req.body with the processed data
     req.body = dataToValidate;
     
     // Custom validation for start date being in the future
     if (dataToValidate.startAt && dataToValidate.startAt <= new Date()) {
+      console.log('❌ Start date is not in the future');
       return res.status(400).json({
         success: false,
         message: 'Validation error',

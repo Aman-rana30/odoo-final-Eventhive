@@ -1,5 +1,6 @@
 import authService from '../services/authService.js';
 import { validationResult } from 'express-validator';
+import { sendMail } from '../utils/mailer.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -14,7 +15,18 @@ export const register = async (req, res, next) => {
 
     const { name, email, phone, password } = req.body;
     const result = await authService.registerUser({ name, email, phone, password });
-    
+
+    // Send welcome email
+    try {
+      await sendMail({
+        to: email,
+        subject: 'Welcome to EventHive!',
+        html: `<h2>Welcome, ${name}!</h2><p>Your registration on EventHive was successful. We're excited to have you join our community!</p>`
+      });
+    } catch (mailErr) {
+      console.error('Error sending registration email:', mailErr);
+    }
+
     res.status(201).json({
       success: true,
       message: 'User registered successfully',

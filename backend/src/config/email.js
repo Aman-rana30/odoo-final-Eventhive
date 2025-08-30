@@ -3,18 +3,60 @@ import { config } from './env.js';
 
 let transporter = null;
 
-if (config.EMAIL_USER && config.EMAIL_PASS) {
-  transporter = nodemailer.createTransport({
-    service: config.EMAIL_SERVICE,
-    host: config.EMAIL_HOST,
-    port: config.EMAIL_PORT,
-    secure: false,
-    auth: {
-      user: config.EMAIL_USER,
-      pass: config.EMAIL_PASS
-    }
-  });
-}
+// Initialize email transporter with better error handling
+const initializeTransporter = () => {
+  if (!config.EMAIL_USER || !config.EMAIL_PASS) {
+    console.log('📧 Email credentials not configured');
+    return null;
+  }
+
+  try {
+    const transportConfig = {
+      service: config.EMAIL_SERVICE,
+      host: config.EMAIL_HOST,
+      port: parseInt(config.EMAIL_PORT),
+      secure: false, // true for 465, false for other ports
+      auth: {
+        user: config.EMAIL_USER,
+        pass: config.EMAIL_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    };
+
+    console.log('📧 Initializing email transporter with config:', {
+      service: transportConfig.service,
+      host: transportConfig.host,
+      port: transportConfig.port,
+      user: transportConfig.auth.user
+    });
+
+    transporter = nodemailer.createTransport(transportConfig);
+    
+    // Verify connection configuration
+    transporter.verify((error, success) => {
+      if (error) {
+        console.error('📧 Email transporter verification failed:', error.message);
+        console.log('📧 Troubleshooting tips:');
+        console.log('1. Make sure you\'re using an App Password (not your regular Gmail password)');
+        console.log('2. Enable 2-Factor Authentication on your Gmail account');
+        console.log('3. Generate an App Password: https://myaccount.google.com/apppasswords');
+        console.log('4. Make sure "Less secure app access" is enabled (if not using App Password)');
+      } else {
+        console.log('📧 Email transporter verified successfully');
+      }
+    });
+
+    return transporter;
+  } catch (error) {
+    console.error('📧 Failed to initialize email transporter:', error.message);
+    return null;
+  }
+};
+
+// Initialize transporter on module load
+transporter = initializeTransporter();
 
 export const sendEmail = async (to, subject, html, attachments = []) => {
   if (!transporter) {
@@ -24,18 +66,32 @@ export const sendEmail = async (to, subject, html, attachments = []) => {
 
   try {
     const mailOptions = {
-      from: config.EMAIL_FROM,
+      from: config.EMAIL_FROM || config.EMAIL_USER,
       to,
       subject,
       html,
       attachments
     };
 
+    console.log('📧 Attempting to send email to:', to);
     const result = await transporter.sendMail(mailOptions);
     console.log('📧 Email sent successfully:', result.messageId);
     return { success: true, messageId: result.messageId };
   } catch (error) {
     console.error('📧 Email send error:', error.message);
+    
+    // Provide specific troubleshooting advice based on error
+    if (error.message.includes('Invalid login') || error.message.includes('535-5.7.8')) {
+      console.log('📧 Gmail Authentication Error - Solutions:');
+      console.log('1. Use App Password instead of regular password');
+      console.log('2. Enable 2-Factor Authentication');
+      console.log('3. Generate App Password: https://myaccount.google.com/apppasswords');
+    } else if (error.message.includes('ENOTFOUND')) {
+      console.log('📧 Network Error - Check internet connection and SMTP settings');
+    } else if (error.message.includes('ECONNREFUSED')) {
+      console.log('📧 Connection Refused - Check SMTP port and firewall settings');
+    }
+    
     return { success: false, error: error.message };
   }
 };

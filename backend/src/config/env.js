@@ -28,11 +28,11 @@ export const config = {
   
   // Email
   EMAIL_SERVICE: process.env.EMAIL_SERVICE || 'gmail',
-  EMAIL_HOST: process.env.EMAIL_HOST || 'smtp.gmail.com',
-  EMAIL_PORT: process.env.EMAIL_PORT || 587,
-  EMAIL_USER: process.env.EMAIL_USER,
-  EMAIL_PASS: process.env.EMAIL_PASS,
-  EMAIL_FROM: process.env.EMAIL_FROM || 'EventHive <noreply@eventhive.com>',
+  EMAIL_HOST: process.env.SMTP_HOST || process.env.EMAIL_HOST || 'smtp.gmail.com',
+  EMAIL_PORT: process.env.SMTP_PORT || process.env.EMAIL_PORT || 587,
+  EMAIL_USER: process.env.SMTP_USER || process.env.EMAIL_USER,
+  EMAIL_PASS: process.env.SMTP_PASS || process.env.EMAIL_PASS,
+  EMAIL_FROM: process.env.SMTP_FROM || process.env.EMAIL_FROM || 'EventHive <noreply@eventhive.com>',
   
   // WhatsApp
   WHATSAPP_PROVIDER: process.env.WHATSAPP_PROVIDER || 'whatsapp_cloud',

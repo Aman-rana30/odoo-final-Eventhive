@@ -1,46 +1,35 @@
-import eventService from '../services/eventService.js';
+import express from 'express';
 import { validationResult } from 'express-validator';
-import { uploadToCloudinary } from '../utils/cloudinary.js';
 import fs from 'fs';
+import Event from '../models/Event.js';
+import eventService from '../services/eventService.js';
+import { uploadToCloudinary } from '../utils/cloudinary.js';
 
 export const getEvents = async (req, res, next) => {
   try {
-    const {
-      page = 1,
-      limit = 12,
-      category,
-      search,
-      city,
-      startDate,
-      endDate,
-      minPrice,
-      maxPrice,
-      venueType,
-      sort = 'startAt'
-    } = req.query;
+    const { page = 1, limit = 10, category, search, sort, minPrice, maxPrice } = req.query;
+    
+    const filters = {};
+    if (category) filters.category = category;
+    if (search) {
+      filters.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
 
-    const filters = {
-      ...(category && { category }),
-      ...(search && { $text: { $search: search } }),
-      ...(city && { 'venue.city': { $regex: city, $options: 'i' } }),
-      ...(startDate && { startAt: { $gte: new Date(startDate) } }),
-      ...(endDate && { endAt: { $lte: new Date(endDate) } }),
-      ...(venueType && { 'venue.type': venueType }),
-      status: 'Published'
-    };
-
-    const result = await eventService.getEvents({
+    const events = await eventService.getEvents({
       filters,
       page: parseInt(page),
       limit: parseInt(limit),
       sort,
-      minPrice: minPrice ? parseFloat(minPrice) : null,
-      maxPrice: maxPrice ? parseFloat(maxPrice) : null
+      minPrice,
+      maxPrice
     });
 
     res.json({
       success: true,
-      data: result
+      data: events
     });
   } catch (error) {
     next(error);
@@ -77,14 +66,8 @@ export const getEventBySlug = async (req, res, next) => {
 
 export const createEvent = async (req, res, next) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-      return res.status(400).json({
-        success: false,
-        message: 'Validation errors',
-        errors: errors.array()
-      });
-    }
+    // Joi validation is already handled by the middleware
+    // No need to check validationResult here
 
     let coverImageUrl = '';
     if (req.file) {
@@ -101,6 +84,8 @@ export const createEvent = async (req, res, next) => {
       coverImageUrl
     };
 
+    console.log('Creating event with data:', JSON.stringify(eventData, null, 2));
+
     const event = await eventService.createEvent(eventData);
     res.status(201).json({
       success: true,
@@ -108,6 +93,7 @@ export const createEvent = async (req, res, next) => {
       data: event
     });
   } catch (error) {
+    console.error('Event creation error:', error);
     next(error);
   }
 };
