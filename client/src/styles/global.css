@@ -1,0 +1,14 @@
+:root {
+  --brand: #0d6efd; /* Bootstrap primary */
+  --accent: #20c997;
+  --neutral-900: #212529;
+  --neutral-100: #f8f9fa;
+}
+
+body {
+  color: var(--neutral-900);
+  background: var(--neutral-100);
+}
+a {
+  text-decoration: none;
+}

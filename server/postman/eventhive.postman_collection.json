@@ -1,0 +1,67 @@
+{
+  "info": {
+    "name": "EventHive API",
+    "_postman_id": "eventhive-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth - Register",
+      "request": {
+        "method": "POST",
+        "url": "{{BASE_URL}}/api/auth/register",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"name\":\"Test\",\"email\":\"test@example.com\",\"password\":\"password\"}" }
+      }
+    },
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "url": "{{BASE_URL}}/api/auth/login",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\"email\":\"att@eventhive.local\",\"password\":\"password\"}" }
+      }
+    },
+    {
+      "name": "Events - List",
+      "request": { "method": "GET", "url": "{{BASE_URL}}/api/events" }
+    },
+    {
+      "name": "Checkout - Create Order",
+      "request": {
+        "method": "POST",
+        "url": "{{BASE_URL}}/api/checkout/order",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\"eventId\":\"{{EVENT_ID}}\",\"items\":[{\"ticketTypeId\":\"{{TICKET_TYPE_ID}}\",\"qty\":1}]}"
+        }
+      }
+    },
+    {
+      "name": "Checkout - Verify & Finalize",
+      "request": {
+        "method": "POST",
+        "url": "{{BASE_URL}}/api/checkout/verify",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": { "mode": "raw", "raw": "{\"orderId\":\"\",\"paymentId\":\"\",\"signature\":\"\"}" }
+      }
+    },
+    {
+      "name": "Me - Bookings",
+      "request": {
+        "method": "GET",
+        "url": "{{BASE_URL}}/api/me/bookings",
+        "header": [{ "key": "Authorization", "value": "Bearer {{ACCESS_TOKEN}}" }]
+      }
+    }
+  ],
+  "variable": [{ "key": "BASE_URL", "value": "http://localhost:4000" }, { "key": "ACCESS_TOKEN", "value": "" }]
+}

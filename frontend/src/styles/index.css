@@ -1,0 +1,7 @@
+/* Bootstrap overrides and minimal globals */
+:root {
+  --brand: #0d6efd;
+}
+a {
+  color: var(--brand);
+}
