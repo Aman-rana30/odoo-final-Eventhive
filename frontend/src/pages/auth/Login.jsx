@@ -129,27 +129,6 @@ const Login = () => {
               </button>
             </div>
           </form>
-
-          {/* Demo accounts */}
-          <div className="mt-6 border-t border-gray-200 pt-6">
-            <p className="text-xs text-gray-500 text-center mb-4">
-              Demo accounts for testing:
-            </p>
-            <div className="space-y-2 text-xs text-gray-600">
-              <div className="flex justify-between">
-                <span>Admin:</span>
-                <span>admin@eventhive.com / password123</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Manager:</span>
-                <span>manager@eventhive.com / password123</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Attendee:</span>
-                <span>attendee@eventhive.com / password123</span>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
     </div>
