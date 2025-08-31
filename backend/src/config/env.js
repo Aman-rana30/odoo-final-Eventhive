@@ -19,7 +19,7 @@ export const config = {
   FRONTEND_URL: process.env.FRONTEND_URL || 'http://localhost:5173',
   
   // Payment
-  PAYMENT_GATEWAY: process.env.PAYMENT_GATEWAY || 'razorpay',
+  PAYMENT_GATEWAY: 'dummy', // Force dummy for testing
   RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID,
   RAZORPAY_KEY_SECRET: process.env.RAZORPAY_KEY_SECRET,
   RAZORPAY_WEBHOOK_SECRET: process.env.RAZORPAY_WEBHOOK_SECRET,

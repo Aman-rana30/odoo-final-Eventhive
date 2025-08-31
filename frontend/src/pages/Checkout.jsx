@@ -74,8 +74,8 @@ const Checkout = () => {
   };
 
   const handleProceedToPayment = () => {
-    // TODO: Implement payment gateway integration
-    toast.success('Proceeding to payment...');
+    // Navigate to payment page
+    navigate('/payment');
   };
 
   if (eventLoading) {

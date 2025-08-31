@@ -4,7 +4,7 @@ import eventRepository from '../repositories/eventRepository.js';
 import ticketRepository from '../repositories/ticketRepository.js';
 import couponRepository from '../repositories/couponRepository.js';
 import userRepository from '../repositories/userRepository.js';
-import { createPaymentOrder } from '../config/payment.js';
+import { createPaymentOrder, getPaymentGateway } from '../config/payment.js';
 import { generateTicketPDF } from '../utils/pdfGenerator.js';
 import { sendEmail, generateTicketEmailHTML } from '../config/email.js';
 import { sendWhatsAppMessage, generateTicketWhatsAppMessage } from '../config/whatsapp.js';
@@ -16,11 +16,14 @@ class BookingService {
     session.startTransaction();
 
     try {
+      console.log('🚀 Starting createPaymentOrder...');
+      
       // Validate event
       const event = await eventRepository.findById(eventId);
       if (!event || event.status !== 'Published') {
         throw new Error('Event not found or not available for booking');
       }
+      console.log('✅ Event validated:', event.title);
 
       // Validate and reserve tickets
       let subtotal = 0;
@@ -49,6 +52,7 @@ class BookingService {
           priceAtPurchase: availability.ticket.price
         });
       }
+      console.log('✅ Tickets reserved, subtotal:', subtotal);
 
       // Apply coupon if provided
       let discount = 0;
@@ -60,16 +64,20 @@ class BookingService {
       }
 
       const total = subtotal - discount;
+      console.log('💰 Total amount:', total);
 
       // Generate booking ID
       const bookingId = await bookingRepository.generateBookingId();
+      console.log('🆔 Generated booking ID:', bookingId);
 
       // Create payment order
+      console.log('💳 Creating payment order...');
       const paymentOrder = await createPaymentOrder(total, 'INR', {
         bookingId,
         eventId: event._id.toString(),
         userId
       });
+      console.log('✅ Payment order created:', paymentOrder.id);
 
       // Create pending booking
       const bookingData = {
@@ -83,15 +91,18 @@ class BookingService {
         total,
         couponCode,
         payment: {
-          gateway: 'razorpay',
+          gateway: getPaymentGateway(),
           orderId: paymentOrder.id,
           status: 'pending'
         }
       };
 
+      console.log('📦 Creating booking with data:', bookingData);
       const booking = await bookingRepository.create(bookingData);
+      console.log('✅ Booking created:', booking._id);
 
       await session.commitTransaction();
+      console.log('✅ Transaction committed successfully');
 
       return {
         booking,
@@ -102,6 +113,8 @@ class BookingService {
         }
       };
     } catch (error) {
+      console.error('❌ Error in createPaymentOrder:', error);
+      console.error('❌ Error stack:', error.stack);
       await session.abortTransaction();
       throw error;
     } finally {
@@ -163,14 +176,27 @@ class BookingService {
 
   async generateAndDeliverTicket(booking) {
     try {
+      console.log('🎫 Starting generateAndDeliverTicket...');
+      console.log('📋 Booking data:', {
+        id: booking._id,
+        bookingId: booking.bookingId,
+        eventId: booking.eventId
+      });
+      
       // Generate PDF ticket
+      console.log('📄 Generating PDF ticket...');
       const event = await eventRepository.findById(booking.eventId);
+      console.log('📅 Event found:', event ? event.title : 'No event');
+      
       const pdfPath = await generateTicketPDF(booking, event);
+      console.log('📄 PDF generated at:', pdfPath);
       
       // Update booking with PDF path
+      console.log('💾 Updating booking with PDF path...');
       await bookingRepository.update(booking._id, { pdfUrl: pdfPath });
 
       // Send email
+      console.log('📧 Sending email...');
       const emailHTML = generateTicketEmailHTML(booking, event);
       const emailResult = await sendEmail(
         booking.attendeeInfo.email,
@@ -178,15 +204,19 @@ class BookingService {
         emailHTML,
         [{ filename: `ticket-${booking.bookingId}.pdf`, path: pdfPath }]
       );
+      console.log('📧 Email result:', emailResult);
 
       // Send WhatsApp
+      console.log('📱 Sending WhatsApp...');
       const whatsappMessage = generateTicketWhatsAppMessage(booking, event);
       const whatsappResult = await sendWhatsAppMessage(
         booking.attendeeInfo.phone,
         whatsappMessage
       );
+      console.log('📱 WhatsApp result:', whatsappResult);
 
       // Update delivery status
+      console.log('📊 Updating delivery status...');
       await bookingRepository.update(booking._id, {
         'delivery.emailed': emailResult.success,
         'delivery.whatsapped': whatsappResult.success,
@@ -194,8 +224,10 @@ class BookingService {
         'delivery.whatsappedAt': whatsappResult.success ? new Date() : undefined
       });
 
+      console.log('✅ generateAndDeliverTicket completed successfully');
     } catch (error) {
-      console.error('Ticket delivery error:', error);
+      console.error('❌ Ticket delivery error:', error);
+      console.error('❌ Error stack:', error.stack);
       // Don't throw error here as payment is already completed
     }
   }
@@ -325,6 +357,55 @@ class BookingService {
 
     // Implementation for CSV/Excel export would go here
     return `/uploads/exports/bookings-${eventId}-${Date.now()}.${format}`;
+  }
+
+  async completeDummyPayment(bookingId, paymentDetails) {
+    try {
+      console.log('🚀 Starting completeDummyPayment...');
+      console.log('🔍 Looking for booking with ID:', bookingId);
+      
+      // Find the booking by ID
+      const booking = await bookingRepository.findByBookingId(bookingId);
+      console.log('👤 Booking found:', booking ? 'Yes' : 'No');
+      
+      if (!booking) {
+        console.log('❌ Booking not found for ID:', bookingId);
+        throw new Error('Booking not found');
+      }
+
+      console.log('✅ Booking found, updating payment status...');
+
+      // Update payment status
+      const updatedBooking = await bookingRepository.updatePaymentStatus(bookingId, {
+        gateway: getPaymentGateway(),
+        orderId: `dummy_${Date.now()}`,
+        paymentId: paymentDetails.paymentId,
+        signature: 'dummy_signature',
+        status: 'completed'
+      });
+
+      console.log('✅ Payment status updated');
+
+      // Update event revenue
+      console.log('💰 Updating event revenue...');
+      await eventRepository.updateRevenue(booking.eventId, booking.total);
+
+      // Award loyalty points (1 point per ₹10 spent)
+      console.log('🎯 Awarding loyalty points...');
+      const loyaltyPoints = Math.floor(booking.total / 10);
+      await userRepository.updateLoyaltyPoints(booking.userId, loyaltyPoints);
+
+      // Generate and deliver ticket
+      console.log('🎫 Generating and delivering ticket...');
+      await this.generateAndDeliverTicket(updatedBooking);
+
+      console.log('✅ completeDummyPayment completed successfully');
+      return updatedBooking;
+    } catch (error) {
+      console.error('❌ Dummy payment completion error:', error);
+      console.error('❌ Error stack:', error.stack);
+      throw error;
+    }
   }
 }
 

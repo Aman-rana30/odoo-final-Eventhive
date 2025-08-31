@@ -4,6 +4,9 @@ import { config } from '../config/env.js';
 
 export const generateQRCode = async (data) => {
   try {
+    console.log('📱 Starting QR code generation...');
+    console.log('📋 Data to encode:', data.substring(0, 100) + '...');
+    
     const qrCodeDataURL = await QRCode.toDataURL(data, {
       errorCorrectionLevel: 'M',
       type: 'image/png',
@@ -14,26 +17,45 @@ export const generateQRCode = async (data) => {
         light: '#FFFFFF'
       }
     });
+    
+    console.log('✅ QR code generated successfully');
     return qrCodeDataURL;
   } catch (error) {
+    console.error('❌ QR Code generation failed:', error);
+    console.error('❌ Error stack:', error.stack);
     throw new Error(`QR Code generation failed: ${error.message}`);
   }
 };
 
 export const generateSecureQRPayload = (bookingId, eventId) => {
-  const timestamp = Date.now();
-  const data = `${bookingId}:${eventId}:${timestamp}`;
-  const hash = crypto
-    .createHmac('sha256', config.QR_SECRET)
-    .update(data)
-    .digest('hex');
-  
-  return JSON.stringify({
-    bookingId,
-    eventId,
-    timestamp,
-    hash
-  });
+  try {
+    console.log('🔐 Starting secure QR payload generation...');
+    console.log('📋 Input:', { bookingId, eventId });
+    
+    const timestamp = Date.now();
+    const data = `${bookingId}:${eventId}:${timestamp}`;
+    
+    console.log('🔑 Using QR_SECRET:', config.QR_SECRET ? 'Set' : 'Not set');
+    
+    const hash = crypto
+      .createHmac('sha256', config.QR_SECRET)
+      .update(data)
+      .digest('hex');
+    
+    const payload = JSON.stringify({
+      bookingId,
+      eventId,
+      timestamp,
+      hash
+    });
+    
+    console.log('✅ Secure QR payload generated');
+    return payload;
+  } catch (error) {
+    console.error('❌ Secure QR payload generation failed:', error);
+    console.error('❌ Error stack:', error.stack);
+    throw error;
+  }
 };
 
 export const verifyQRPayload = (payload) => {

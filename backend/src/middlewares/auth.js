@@ -4,7 +4,11 @@ import userRepository from '../repositories/userRepository.js';
 
 export const authenticate = async (req, res, next) => {
   try {
+    console.log('🔍 Authentication middleware called for:', req.path);
+    console.log('📋 Request headers:', req.headers);
+    
     const token = req.header('Authorization')?.replace('Bearer ', '');
+    console.log('🔑 Token extracted:', token ? `${token.substring(0, 20)}...` : 'No token');
     
     if (!token) {
       console.log('❌ No authorization token provided');
@@ -18,6 +22,7 @@ export const authenticate = async (req, res, next) => {
     console.log('🔑 Token decoded:', { id: decoded.id, email: decoded.email, roles: decoded.roles });
     
     const user = await userRepository.findById(decoded.id);
+    console.log('👤 User found:', user ? { id: user._id, email: user.email, isActive: user.isActive } : 'Not found');
     
     if (!user || !user.isActive) {
       console.log('❌ User not found or inactive:', { userId: decoded.id, userFound: !!user, isActive: user?.isActive });
@@ -37,6 +42,7 @@ export const authenticate = async (req, res, next) => {
     next();
   } catch (error) {
     console.log('❌ Authentication error:', error.message);
+    console.log('❌ Error stack:', error.stack);
     res.status(401).json({
       success: false,
       message: 'Invalid or expired token'

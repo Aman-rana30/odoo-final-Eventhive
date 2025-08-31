@@ -19,6 +19,8 @@ import MyBookings from './pages/MyBookings';
 import BookingDetails from './pages/BookingDetails';
 import Checkout from './pages/Checkout';
 import CheckoutSuccess from './pages/CheckoutSuccess';
+import PaymentPage from './pages/PaymentPage';
+import TestPayment from './pages/TestPayment';
 
 // Organizer pages
 import OrganizerDashboard from './pages/organizer/OrganizerDashboard';
@@ -92,6 +94,12 @@ function App() {
               <CheckoutSuccess />
             </ProtectedRoute>
           } />
+          <Route path="/payment" element={
+            <ProtectedRoute>
+              <PaymentPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/test-payment" element={<TestPayment />} />
 
           {/* Organizer routes */}
           <Route path="/organizer" element={

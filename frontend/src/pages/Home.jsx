@@ -1,12 +1,15 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from 'react-query';
 import { Calendar, Users, Award, Search, ArrowRight, Star, TrendingUp } from 'lucide-react';
-import { eventsAPI } from '../api/events';
-import EventCard from '../components/events/EventCard';
-import LoadingSpinner from '../components/ui/LoadingSpinner';
+import { eventsAPI } from '/src/api/events.js';
+import EventCard from '/src/components/events/EventCard.jsx';
+import LoadingSpinner from '/src/components/ui/LoadingSpinner.jsx';
 
 const Home = () => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
+
   const { data: featuredEvents, isLoading: featuredLoading } = useQuery(
     'featuredEvents',
     eventsAPI.getFeaturedEvents
@@ -16,6 +19,13 @@ const Home = () => {
     'trendingEvents',
     eventsAPI.getTrendingEvents
   );
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    if (searchTerm.trim()) {
+      navigate(`/events?search=${encodeURIComponent(searchTerm.trim())}`);
+    }
+  };
 
   const categories = [
     { name: 'Workshops', icon: Users, color: 'bg-blue-500', value: 'workshop' },
@@ -44,17 +54,22 @@ const Home = () => {
 
             {/* Search Bar */}
             <div className="max-w-2xl mx-auto animate-slide-up">
-              <div className="relative">
+              <form onSubmit={handleSearch} className="relative">
                 <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
                 <input
                   type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Search for events, categories, or locations..."
-                  className="w-full pl-12 pr-20 py-4 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
+                  className="w-full pl-12 pr-28 sm:pr-32 py-4 rounded-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:ring-opacity-50"
                 />
-                <button className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                <button
+                  type="submit"
+                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white px-4 sm:px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   Search
                 </button>
-              </div>
+              </form>
             </div>
 
             {/* CTA Buttons */}
@@ -224,3 +239,4 @@ const Home = () => {
 };
 
 export default Home;
+

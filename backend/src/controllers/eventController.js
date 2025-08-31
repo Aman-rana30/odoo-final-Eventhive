@@ -3,6 +3,7 @@ import { validationResult } from 'express-validator';
 import fs from 'fs';
 import Event from '../models/Event.js';
 import eventService from '../services/eventService.js';
+import bookingService from '../services/bookingService.js';
 import { uploadToCloudinary } from '../utils/cloudinary.js';
 
 export const getEvents = async (req, res, next) => {
@@ -209,6 +210,47 @@ export const getMyEvents = async (req, res, next) => {
       success: true,
       data: result
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const processDummyPayment = async (req, res, next) => {
+  try {
+    const { bookingId, paymentMethod, cardDetails } = req.body;
+    
+    // Simulate payment processing delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    
+    // Generate dummy payment ID
+    const paymentId = `dummy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Simulate payment success (you can add logic here to simulate failures)
+    const paymentSuccess = true;
+    
+    if (paymentSuccess) {
+      // Update booking with payment details
+      const updatedBooking = await bookingService.completeDummyPayment(bookingId, {
+        paymentId,
+        method: paymentMethod,
+        status: 'completed'
+      });
+      
+      res.json({
+        success: true,
+        message: 'Payment completed successfully',
+        data: {
+          booking: updatedBooking,
+          paymentId,
+          redirectUrl: `/checkout-success/${updatedBooking._id}`
+        }
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        message: 'Payment failed. Please try again.'
+      });
+    }
   } catch (error) {
     next(error);
   }

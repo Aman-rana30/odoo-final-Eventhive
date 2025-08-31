@@ -10,7 +10,8 @@ import {
   getFeaturedEvents,
   getTrendingEvents,
   trackEventView,
-  getMyEvents
+  getMyEvents,
+  processDummyPayment
 } from '../controllers/eventController.js';
 import { authenticate, authorize, optionalAuth } from '../middlewares/auth.js';
 import { validateEvent } from '../middlewares/validation.js';
@@ -32,5 +33,8 @@ router.post('/', authenticate, authorize('EventManager', 'Admin'), uploadSingle(
 router.put('/:id', authenticate, authorize('EventManager', 'Admin'), uploadSingle('coverImage'), updateEvent);
 router.patch('/:id/publish', authenticate, authorize('EventManager', 'Admin'), publishEvent);
 router.delete('/:id', authenticate, authorize('EventManager', 'Admin'), deleteEvent);
+
+// Payment route
+router.post('/dummy-payment', authenticate, processDummyPayment);
 
 export default router;
