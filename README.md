@@ -1,4 +1,7 @@
-# Team Number : 24
+# Team Number : 24  
+
+Video Link 🎥:  
+[Click here to watch demo](https://drive.google.com/file/d/1uQUYpNrKgU0pXhcg6a2pwKYX2sCbJZEd/view?usp=sharing)
 
 # EventHive - Complete Event Management Platform
 
